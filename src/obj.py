@@ -1,6 +1,7 @@
-# Carga un archivo tipo OBJ
+# Carga archivos
 import struct
 from PIL import Image
+from msmath import *
 from os import error
 
 def color(r, g, b):
@@ -61,7 +62,7 @@ class Texture(object):
                         g = ord(image.read(1)) / 255
                         r = ord(image.read(1)) / 255
                         
-                        self.pixels[x].append(color(r, g, b))
+                        self.pixels[x].append(V3(r, g, b))
 
             image.close()
 
@@ -80,7 +81,7 @@ class Texture(object):
                     g = img.getpixel((x,y))[1] / 255
                     b = img.getpixel((x,y))[2] / 255
 
-                    self.pixels[x].append(color(r, g, b))
+                    self.pixels[x].append(V3(r, g, b))
 
             img.close()
 
@@ -92,9 +93,71 @@ class Texture(object):
                 if x < len(self.pixels[y]):
                     return self.pixels[y][x]
                 else:
-                    return color(0,0,0)
+                    return V3(0,0,0)
             else:
-                return color(0,0,0)
+                return V3(0,0,0)
             #return self.pixels[y][x]
         else:
-            return color(0,0,0)
+            return V3(0,0,0)
+
+class EnvMap(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.read()
+
+
+    def read(self):
+        if self.filename.find(".bmp") > 0:
+            with open(self.filename, "rb") as image:
+                image.seek(10)
+                headerSize = struct.unpack('=l', image.read(4))[0]
+
+                image.seek(14 + 4)
+                self.width = struct.unpack('=l', image.read(4))[0]
+                self.height = struct.unpack('=l', image.read(4))[0]
+
+                image.seek(headerSize)
+
+                self.pixels = []
+
+                for y in range(self.height):
+                    self.pixels.append([])
+                    for x in range(self.width):
+                        b = ord(image.read(1)) / 255
+                        g = ord(image.read(1)) / 255
+                        r = ord(image.read(1)) / 255
+
+                        self.pixels[y].append(V3(r,g,b))
+        else:
+            self.img = Image.open(self.filename)
+
+            self.width = self.img.width
+            self.height = self.img.height
+            self.imgCoords = self.img.load()
+
+            self.pixels = []
+
+            for x in range(self.img.size[0]):
+                print("ENV... ", x)
+                self.pixels.append([])
+                for y in range(self.img.size[1]):
+                    if type(self.imgCoords[x,y]) == int:
+                        r = self.imgCoords[x,y] / 255
+                        g = self.imgCoords[x,y] / 255
+                        b = self.imgCoords[x,y] / 255
+                    else:
+                        r = self.imgCoords[x,y][0] / 255
+                        g = self.imgCoords[x,y][1] / 255
+                        b = self.imgCoords[x,y][2] / 255
+
+                    self.pixels[x].append(V3(r, g, b))
+
+
+    def getColor(self, dir):
+
+        dir = normalize(dir)
+
+        x = int(((arctangent2( dir[2], dir[0]) / (2 * pi)) - 0.15 ) * self.width )
+        y = int(arccosine(-dir[1]) / pi * self.height)
+
+        return self.pixels[y][x]

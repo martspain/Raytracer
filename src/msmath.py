@@ -2,7 +2,7 @@
 # Author: Martín España
 
 from collections import namedtuple
-from math import sin, cos
+from math import sin, cos, acos, asin, atan, atan2
 
 V2 = namedtuple('Point2', ['x', 'y'])
 V3 = namedtuple('Point3', ['x', 'y', 'z'])
@@ -177,6 +177,18 @@ def tangent(deg):
         return
     else:
         return sine(deg) / cosine(deg)
+
+def arcsine(deg):
+    return asin(radians(deg))
+
+def arccosine(deg):
+    return acos(deg)
+
+def arctangent(deg):
+    return atan(radians(deg))
+
+def arctangent2(y, x):
+    return atan2(y, x)
 
 def degrees(rad):
     return (rad * 180) / pi
