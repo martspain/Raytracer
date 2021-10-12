@@ -74,14 +74,14 @@ class Texture(object):
 
             self.pixels = []
 
-            for x in range(self.width):
+            for y in range(self.height):
                 self.pixels.append([])
-                for y in range(self.height):
-                    r = img.getpixel((x,y))[0] / 255
-                    g = img.getpixel((x,y))[1] / 255
-                    b = img.getpixel((x,y))[2] / 255
+                for x in range(self.width):
+                    r = img.getpixel((x, y))[0] / 255
+                    g = img.getpixel((x, y))[1] / 255
+                    b = img.getpixel((x, y))[2] / 255
 
-                    self.pixels[x].append(V3(r, g, b))
+                    self.pixels[y].append(V3(r, g, b))
 
             img.close()
 
@@ -138,7 +138,7 @@ class EnvMap(object):
             self.pixels = []
 
             for x in range(self.img.size[0]):
-                print("ENV... ", x)
+                #print("ENV... ", x)
                 self.pixels.append([])
                 for y in range(self.img.size[1]):
                     if type(self.imgCoords[x,y]) == int:
@@ -157,7 +157,8 @@ class EnvMap(object):
 
         dir = normalize(dir)
 
-        x = int(((arctangent2( dir[2], dir[0]) / (2 * pi)) - 0.15 ) * self.width )
+        # Shangai: 0.15
+        x = int(((arctangent2( dir[2], dir[0]) / (2 * pi)) - 0.45 ) * self.width )
         y = int(arccosine(-dir[1]) / pi * self.height)
 
         return self.pixels[y][x]
